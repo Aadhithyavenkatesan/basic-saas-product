@@ -49,14 +49,18 @@ def shorten_url():
     existing_entry = cursor.fetchone()
     if existing_entry:
         conn.close()
-        return render_template('shorten.html', link=f'{request.host_url}{existing_entry["short_url"]}') 
+        return render_template('shorten.html', 
+    link=f'{request.host_url}{existing_entry["short_url"]}', 
+    text=f'https://url/{existing_entry["short_url"]}'
+)
+
     
     short_url = generate_short_url(long_url)
     cursor.execute("INSERT INTO shortner (long_url, short_url) VALUES (%s, %s)", (long_url, short_url))
     conn.commit()
     conn.close()
 
-    return render_template('shorten.html', link=f'{request.host_url}{short_url}') 
+    return render_template('shorten.html', text=f'{request.host_url}{short_url}') 
 
 # Redirect shortened URLs
 @app.route('/<short_url>', methods=['GET'])
