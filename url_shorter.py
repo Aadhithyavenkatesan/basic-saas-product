@@ -2,15 +2,20 @@ from flask import Flask, request, redirect, jsonify, render_template
 import mysql.connector
 import hashlib
 import base64
+from dotenv import load_dotenv
+import os
 
 app = Flask(__name__)
 
+# Load variables from .env
+load_dotenv()
+
 # Database Configuration
 DB_CONGIG = {
-    'host': 'sql12.freesqldatabase.com',
-    'user': 'sql12770387',
-    'password': 'SFNf5knCN1',
-    'database': 'sql12770387'
+    'host': os.getenv('DB_HOST'),
+    'user': os.getenv('DB_USER'),
+    'password': os.getenv('DB_PASSWORD'),
+    'database': os.getenv('DB_NAME')
 }
 
 def get_db_connection():
@@ -44,14 +49,14 @@ def shorten_url():
     existing_entry = cursor.fetchone()
     if existing_entry:
         conn.close()
-        return f"Shortened URL: <a href='{request.host_url}{existing_entry['short_url']}'>{request.host_url}{existing_entry}</a>"
+        return render_template('shorten.html', link=f'{request.host_url}{existing_entry["short_url"]}') 
     
     short_url = generate_short_url(long_url)
     cursor.execute("INSERT INTO shortner (long_url, short_url) VALUES (%s, %s)", (long_url, short_url))
     conn.commit()
     conn.close()
 
-    return f"Shortened URL: <a href='{request.host_url}{short_url}'>{request.host_url}{short_url}</a>"
+    return render_template('shorten.html', link=f'{request.host_url}{short_url}') 
 
 # Redirect shortened URLs
 @app.route('/<short_url>', methods=['GET'])
